@@ -45,10 +45,16 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase upsert error details:", error);
+      throw error;
+    }
     return NextResponse.json(entry);
   } catch (error) {
     console.error("Supabase POST error:", error);
-    return NextResponse.json({ error: "Failed to upsert entry" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Failed to upsert entry", 
+      details: error instanceof Error ? error.message : JSON.stringify(error) 
+    }, { status: 500 });
   }
 }
