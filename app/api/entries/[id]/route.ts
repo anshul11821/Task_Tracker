@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { database } from "@/lib/database";
 
 export async function DELETE(
   request: Request,
@@ -7,7 +7,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = params;
-    const { error } = await supabase
+    const { error } = await database
       .from("Entry")
       .delete()
       .eq("id", id);
@@ -32,7 +32,7 @@ export async function PUT(
     const { id: _, ...updateData } = body;
     updateData.updatedAt = new Date().toISOString();
 
-    const { data: entry, error } = await supabase
+    const { data: entry, error } = await database
       .from("Entry")
       .update(updateData)
       .eq("id", id)

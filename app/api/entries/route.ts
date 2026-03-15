@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { database } from "@/lib/database";
 
 export async function GET() {
   try {
-    const { data: entries, error } = await supabase
+    const { data: entries, error } = await database
       .from("Entry")
       .select("*")
       .order("date", { ascending: false });
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "date and task are required" }, { status: 400 });
     }
 
-    const { data: entry, error } = await supabase
+    const { data: entry, error } = await database
       .from("Entry")
       .upsert(
         {
