@@ -1,6 +1,0 @@
-@echo off
-echo Generating Prisma Client...
-npx prisma generate
-echo Pushing schema to DB...
-npx prisma db push
-echo Done.
