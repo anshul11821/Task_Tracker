@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       .from("Entry")
       .upsert(
         {
+          id: crypto.randomUUID(), // Provide a new ID; onConflict will handle updates if date/task match
           date,
           task,
           anshul: anshul ?? false,
