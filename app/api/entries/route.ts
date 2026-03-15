@@ -1,16 +1,21 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
   try {
-    console.log("DATABASE_URL present:", !!process.env.DATABASE_URL);
-    const entries = await prisma.entry.findMany({
-      orderBy: { date: "desc" },
-    });
+    const { data: entries, error } = await supabase
+      .from("Entry")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) throw error;
     return NextResponse.json(entries);
   } catch (error) {
-    console.error("Prisma GET error:", error);
-    return NextResponse.json({ error: "Failed to fetch entries", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("Supabase GET error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch entries", details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
 }
 
@@ -23,28 +28,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "date and task are required" }, { status: 400 });
     }
 
-    const entry = await prisma.entry.upsert({
-      where: {
-        date_task: { date, task },
-      },
-      update: {
-        anshul: anshul ?? false,
-        arsh: arsh ?? false,
-        shivraj: shivraj ?? false,
-        shruti: shruti ?? false,
-      },
-      create: {
-        date,
-        task,
-        anshul: anshul ?? false,
-        arsh: arsh ?? false,
-        shivraj: shivraj ?? false,
-        shruti: shruti ?? false,
-      },
-    });
+    const { data: entry, error } = await supabase
+      .from("Entry")
+      .upsert(
+        {
+          date,
+          task,
+          anshul: anshul ?? false,
+          arsh: arsh ?? false,
+          shivraj: shivraj ?? false,
+          shruti: shruti ?? false,
+          updatedAt: new Date().toISOString(),
+        },
+        { onConflict: "date,task" }
+      )
+      .select()
+      .single();
 
+    if (error) throw error;
     return NextResponse.json(entry);
   } catch (error) {
+    console.error("Supabase POST error:", error);
     return NextResponse.json({ error: "Failed to upsert entry" }, { status: 500 });
   }
 }
