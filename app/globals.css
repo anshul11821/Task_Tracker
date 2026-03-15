@@ -1,0 +1,229 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0d0d14;
+  --bg-card: #13131f;
+  --bg-surface: #1a1a2e;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sora), sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glass card effect */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effect */
+.glow-purple {
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+/* Pulse animation */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Heatmap cell */
+.heatmap-cell {
+  transition: all 0.2s ease;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.3);
+  z-index: 10;
+}
+
+/* Tab active indicator */
+.tab-active {
+  position: relative;
+}
+
+.tab-active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #a78bfa, #38bdf8);
+  border-radius: 1px;
+}
+
+/* Checkbox custom */
+input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, #a78bfa, #38bdf8);
+  border-color: transparent;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Input styles */
+input[type="date"],
+select {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: white;
+  padding: 10px 14px;
+  font-family: var(--font-sora), sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+input[type="date"]:focus,
+select:focus {
+  border-color: #a78bfa;
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-family: var(--font-sora), sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-weight: 500;
+  font-size: 13px;
+  font-family: var(--font-sora), sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(248, 113, 113, 0.3);
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 24px;
+  font-weight: 500;
+  font-family: var(--font-sora), sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card);
+  border-color: rgba(255, 255, 255, 0.12);
+}
