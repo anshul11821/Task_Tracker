@@ -4,24 +4,67 @@ import { useState, useEffect } from "react";
 import { PEOPLE, TASKS } from "@/lib/types";
 import { format } from "date-fns";
 
+function buildEmptyGrid(): Record<string, Record<string, boolean>> {
+  const initial: Record<string, Record<string, boolean>> = {};
+  for (const task of TASKS) {
+    initial[task.key] = {};
+    for (const person of PEOPLE) {
+      initial[task.key][person.key] = false;
+    }
+  }
+  return initial;
+}
+
+function buildGridFromEntries(
+  allEntries: { date: string; task: string; [key: string]: unknown }[],
+  targetDate: string
+): Record<string, Record<string, boolean>> {
+  const dayEntries = allEntries.filter((e) => e.date === targetDate);
+  const newGrid = buildEmptyGrid();
+  for (const task of TASKS) {
+    const entry = dayEntries.find((e) => e.task === task.key);
+    for (const person of PEOPLE) {
+      newGrid[task.key][person.key] = entry ? Boolean(entry[person.key]) : false;
+    }
+  }
+  return newGrid;
+}
+
+async function fetchGridForDate(targetDate: string): Promise<Record<string, Record<string, boolean>>> {
+  const res = await fetch("/api/entries");
+  const entries = await res.json();
+  return buildGridFromEntries(entries, targetDate);
+}
+
 export default function LogForm() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [grid, setGrid] = useState<Record<string, Record<string, boolean>>>({});
+  const [grid, setGrid] = useState<Record<string, Record<string, boolean>>>(buildEmptyGrid);
   const [loading, setLoading] = useState(false);
-  const [loadingExisting, setLoadingExisting] = useState(false);
+  const [loadingDay, setLoadingDay] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Initialize grid
+  // When the date changes, load checkboxes from saved history for that day
   useEffect(() => {
-    const initial: Record<string, Record<string, boolean>> = {};
-    for (const task of TASKS) {
-      initial[task.key] = {};
-      for (const person of PEOPLE) {
-        initial[task.key][person.key] = false;
+    let cancelled = false;
+    (async () => {
+      setLoadingDay(true);
+      try {
+        const next = await fetchGridForDate(date);
+        if (cancelled) return;
+        setGrid(next);
+      } catch {
+        if (!cancelled) {
+          setMessage({ type: "error", text: "Failed to load data for selected date" });
+          setTimeout(() => setMessage(null), 3000);
+        }
+      } finally {
+        if (!cancelled) setLoadingDay(false);
       }
-    }
-    setGrid(initial);
-  }, []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [date]);
 
   const toggleCell = (taskKey: string, personKey: string) => {
     setGrid((prev) => ({
@@ -31,30 +74,6 @@ export default function LogForm() {
         [personKey]: !prev[taskKey]?.[personKey],
       },
     }));
-  };
-
-  const loadExisting = async () => {
-    setLoadingExisting(true);
-    try {
-      const res = await fetch("/api/entries");
-      const entries = await res.json();
-      const dayEntries = entries.filter((e: any) => e.date === date);
-
-      const newGrid: Record<string, Record<string, boolean>> = {};
-      for (const task of TASKS) {
-        newGrid[task.key] = {};
-        const entry = dayEntries.find((e: any) => e.task === task.key);
-        for (const person of PEOPLE) {
-          newGrid[task.key][person.key] = entry ? entry[person.key] : false;
-        }
-      }
-      setGrid(newGrid);
-      setMessage({ type: "success", text: `Loaded data for ${date}` });
-    } catch {
-      setMessage({ type: "error", text: "Failed to load existing data" });
-    }
-    setLoadingExisting(false);
-    setTimeout(() => setMessage(null), 3000);
   };
 
   const handleSubmit = async () => {
@@ -85,23 +104,26 @@ export default function LogForm() {
 
   return (
     <div className="space-y-6">
-      {/* Date picker + actions */}
+      {/* Date picker */}
       <div className="glass-card p-6">
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <label className="block text-xs text-white/40 uppercase tracking-wider font-sora mb-2">
               Date
             </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-48"
-            />
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-48"
+                disabled={loadingDay}
+              />
+              {loadingDay && (
+                <span className="text-xs text-white/40 font-sora animate-pulse">Loading…</span>
+              )}
+            </div>
           </div>
-          <button onClick={loadExisting} className="btn-secondary" disabled={loadingExisting}>
-            {loadingExisting ? "Loading..." : "📥 Load Existing"}
-          </button>
         </div>
       </div>
 
@@ -149,6 +171,7 @@ export default function LogForm() {
                         type="checkbox"
                         checked={grid[task.key]?.[person.key] || false}
                         onChange={() => toggleCell(task.key, person.key)}
+                        disabled={loadingDay}
                       />
                     </td>
                   ))}
@@ -161,7 +184,7 @@ export default function LogForm() {
 
       {/* Submit */}
       <div className="flex items-center gap-4">
-        <button onClick={handleSubmit} className="btn-primary" disabled={loading}>
+        <button onClick={handleSubmit} className="btn-primary" disabled={loading || loadingDay}>
           {loading ? "Saving..." : "💾 Save All Entries"}
         </button>
         {message && (

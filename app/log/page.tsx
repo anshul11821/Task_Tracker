@@ -5,7 +5,7 @@ export default function LogPage() {
     <div className="animate-fade-in">
       <div className="mb-6">
         <p className="text-sm text-white/40 font-sora">
-          Select a date, toggle tasks per person, and save. Use &quot;Load Existing&quot; to prefill from the database.
+          Saved checkboxes for the selected day load automatically. Toggle tasks per person, then save.
         </p>
       </div>
       <LogForm />
